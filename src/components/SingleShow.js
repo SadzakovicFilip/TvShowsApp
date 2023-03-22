@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { useParams} from "react-router-dom";
 import axios from "axios";
 
@@ -6,21 +6,23 @@ function SingleShow({ shows }) {
   const [seasons, setSeasons] = useState([]);
   const [cast, setCast] = useState([]);
   const { showId } = useParams();
-  const num = parseFloat(showId);
 
-  const oneShow = shows.find((show) => show.id === num);
+  const oneShow = shows.find((show) => show.id === Number(showId));
 
-  useEffect(
-    () => async () => {
-      const seasons1 = await axios.get(
-        ` https://api.tvmaze.com/shows/${showId}/seasons`
-      );
-      const cast1 = await axios.get(
-        ` https://api.tvmaze.com/shows/${showId}/cast`
-      );
-      setSeasons(seasons1.data);
-      setCast(cast1.data);
-    },[]);
+  const fetchData= useCallback(async()=>{
+    const seasonsResponse = await axios.get(
+      ` https://api.tvmaze.com/shows/${showId}/seasons`
+    );
+    const castResponse = await axios.get(
+      ` https://api.tvmaze.com/shows/${showId}/cast`
+    );
+    setSeasons(seasonsResponse.data);
+    setCast(castResponse.data);
+  },[showId])
+
+    useEffect(()=>{
+      fetchData()
+    },[showId])
 
   const seasonsDate = seasons.map((item) => {
     return (
@@ -39,10 +41,10 @@ function SingleShow({ shows }) {
       <div className="TvShowName">
 
         <h1>
-          <i>{oneShow.name}</i>
+          <i>{oneShow?.name}</i>
         </h1>
 
-        <h2 className="rating">Rating {oneShow.rating.average} ★</h2>
+        <h2 className="rating">Rating {oneShow?.rating?.average} ★</h2>
         
       </div>
       <div className="showInfo">
@@ -50,7 +52,7 @@ function SingleShow({ shows }) {
 
           <img
             className="coverImg"
-            src={oneShow.image.original}
+            src={oneShow?.image?.original}
             alt="coverImg"
           ></img>
 
@@ -67,7 +69,7 @@ function SingleShow({ shows }) {
 
         <p className="Plot">
           <strong>Plot:</strong>
-          <i>{oneShow.summary}</i>
+          <i>{oneShow?.summary}</i>
         </p>
 
       </div>
